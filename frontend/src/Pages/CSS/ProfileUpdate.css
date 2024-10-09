@@ -1,0 +1,107 @@
+.profileupdate{
+    width: 100%;
+    height: 130vh;
+    background: #fce3fe;
+    padding-top: 100px;
+    padding-bottom: 100px;
+}
+
+.profileupdate-container{
+    width: 580px;
+    height: 700px;
+    background: white;
+    margin: auto;
+    padding: 40px 60px;
+}
+
+.profileupdate-container h1{
+    margin: 20px 0px;
+}
+
+.profileupdate-fields{
+    display: flex;
+    flex-direction: column;
+    gap: 29px;
+    margin-top: 30px;
+}
+
+.profileupdate-fields input{
+    height: 72px;
+    width: 100%;
+    padding-left: 20px;
+    border: 1px solid #c9c9c9;
+    outline: none;
+    color: #5c5c5c;
+    font-size: 18px;
+}
+
+.profileupdate-container button{
+    width: 580px;
+    height: 72px;
+    color: white;
+    background: #ff4141;
+    margin-top: 30px;
+    border: none;
+    font-size: 24px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.profileupdate-login{
+    margin-top: 20px;
+    color: #5c5c5c;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.profileupdate-login span{
+    color: #ff4141;
+    font-weight: 600;
+}
+
+@media(max-width:1280px){
+    .profileupdate{
+        padding-top: 50px;
+    }
+    .profileupdate-container{
+        width: auto;
+        max-width: 500px;
+        max-height: 500px;
+    }
+    .profileupdate-container h1{
+        margin: 10px 0px;
+    }
+    .profileupdate-fields{
+        gap: 20px;
+        margin-top: 20px;
+    }
+    .profileupdate-fields input{
+        height: 65px;
+        width: 93%;
+    }
+    .profileupdate-container button{
+        width: 100%;
+    }
+    .profileupdate-login{
+        font-size: 16px;
+    }
+}
+
+@media(max-width:800px){
+    .profileupdate-container{
+        padding: 20px 30px;
+    }
+    .profileupdate-container h1{
+        font-size: 24px;
+    }
+    .profileupdate-fields{
+        margin-top: 20px;
+    }
+    .profileupdate-fields input{
+        height: 50px;
+    }
+    .profileupdate-container button{
+        height: 50px;
+        font-size: 16px;
+    }
+}
