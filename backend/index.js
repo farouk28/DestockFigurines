@@ -10,6 +10,15 @@ const cors = require("cors");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
+// const https = require("https");
+// const fs = require("fs");
+
+// Load SSL certificate and key
+// const sslOptions = {
+//     key: fs.readFileSync('path/to/your/private.key'), // Replace with the path to your private key
+//     cert: fs.readFileSync('path/to/your/certificate.crt') // Replace with the path to your certificate
+// };
+
 // Session Middleware Setup
 app.use(session({
     secret: 'your_secret_key', // Replace with a strong secret
@@ -217,7 +226,7 @@ app.post('/signup',async(req,res)=>{
 })
 
 // API endpoint to retrieve the username
-app.get('/users:_id', async (req, res) => {
+app.get('/users/:_id', async (req, res) => {
     const user = await Users.findOne({ email: req.user.email });
     if (!user) {
       return res.status(404).json({ success: false, errors: 'User  not found' });
@@ -385,3 +394,14 @@ app.listen(port,(error)=>{
         console.log("Error : "+error)
     }
 })
+
+// Créer le serveur HTTPS
+//const httpsServer = https.createServer(sslOptions, app);
+
+//httpsServer.listen(port, (error) => {
+//    if (!error) {
+//        console.log("HTTPS Server Running on Port " + port);
+//    } else {
+//        console.log("Error: " + error);
+//    }
+//});

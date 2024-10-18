@@ -14,15 +14,24 @@ const Navbar = () => {
   const menuRef = useRef();
 
   useEffect(() => {
-    axios.get('/users:_id')
-      .then(response => {
-        console.log('API response:', response.data); // Add this line
-        setUsername(response.data.name);
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  }, []);
+    const userId = localStorage.getItem('user'); // Assuming userId is actually email
+    if (userId) {
+        axios.get(`/users/${userId}`)
+            .then(response => {
+                console.log('API response:', response.data);
+                if (response.data && response.data.name) {
+                    setUsername(response.data.name);
+                } else {
+                    console.error("Username not found in response.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching user data:", error);
+            });
+    } else {
+        console.error("No user ID found in localStorage.");
+    }
+}, []);
 
   const dropdown_toggle = (e) => {
     menuRef.current.classList.toggle('nav-menu-visible');
@@ -51,7 +60,7 @@ const Navbar = () => {
                 <div>
                     <ul ref={menuRef} className='nav-menu-2'>
                         <li onClick={() => { setMenu("profileupdate") }}><Link style={{ textDecoration: 'none' }} to='/profileupdate'>Parameter</Link>{menu === "profileupdate" ? <hr /> : <></>}</li>
-                        <li className='pointer' onClick={() => { localStorage.removeItem('auth-token'); window.location.replace('/') }}>Logout</li>
+                        <li className='pointer' onClick={() => { localStorage.removeItem('auth-token'); localStorage.removeItem('userId'); window.location.replace('/') }}>Logout</li>
                     </ul>
                 </div>
             </div>
@@ -65,7 +74,7 @@ const Navbar = () => {
         <div className='nav-cart-count'>{getTotalCartItems()}</div>
       </div>
     </div>
-  )
+  );
 }
 
 export default Navbar;
