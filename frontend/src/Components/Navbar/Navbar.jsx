@@ -14,7 +14,7 @@ const Navbar = () => {
   const menuRef = useRef();
 
   useEffect(() => {
-    axios.get('/api/user')
+    axios.get('/users:_id')
       .then(response => {
         console.log('API response:', response.data); // Add this line
         setUsername(response.data.name);

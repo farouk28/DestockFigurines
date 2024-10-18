@@ -1,5 +1,6 @@
 const port = 4000;
 const express = require("express");
+const session = require('express-session');
 const app = express();
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
@@ -8,6 +9,14 @@ const path = require("path");
 const cors = require("cors");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+
+// Session Middleware Setup
+app.use(session({
+    secret: 'your_secret_key', // Replace with a strong secret
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set to true if using HTTPS in production
+}));
 
 app.use(express.json());
 app.use(cors());
@@ -208,7 +217,7 @@ app.post('/signup',async(req,res)=>{
 })
 
 // API endpoint to retrieve the username
-app.get('/api/user', async (req, res) => {
+app.get('/users:_id', async (req, res) => {
     const user = await Users.findOne({ email: req.user.email });
     if (!user) {
       return res.status(404).json({ success: false, errors: 'User  not found' });
