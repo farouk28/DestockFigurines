@@ -55,7 +55,7 @@ const Navbar = () => {
         {localStorage.getItem('auth-token')
           ? (
             <div className='user-menu'>
-                <span>Welcome, {username}!</span> {/* Display the username */}
+                <span>Welcome, <p>{username}</p>!</span> {/* Display the username */}
                 <p className='nav-dropdown-2' onClick={dropdown_toggle}>v</p>
                 <div>
                     <ul ref={menuRef} className='nav-menu-2'>
