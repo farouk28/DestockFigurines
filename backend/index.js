@@ -47,9 +47,9 @@ app.get("/",(req,res)=>{
     res.send("Express App is Running")
 })
 
-app.get('/*', (_, res)=>{
-    res.sendFile(path.join(__dirname, '../frontend/src/index.js'))
-})
+// app.get('/*', (_, res)=>{
+//     res.sendFile(path.join(__dirname, '../frontend/src/index.js'))
+// })
 
 // Image Storage Engine
 
