@@ -29,6 +29,7 @@ app.use(session({
 }));
 
 app.use(express.json());
+app.use(express.static('frontend/build'))
 app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -44,6 +45,10 @@ mongoose.connect("mongodb+srv://Farouk:Naruto12@cluster0.jjsmv.mongodb.net/e-com
 
 app.get("/",(req,res)=>{
     res.send("Express App is Running")
+})
+
+app.get('/*', (_, res)=>{
+    res.sendFile(path.join(__dirname, '../frontend/src/index.js'))
 })
 
 // Image Storage Engine
