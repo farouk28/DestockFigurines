@@ -48,7 +48,7 @@ app.get("/",(req,res)=>{
 })
 
 // app.get('/*', (_, res)=>{
-//     res.sendFile(path.join(__dirname, '../frontend/src/index.js'))
+//     res.sendFile(path.join(__dirname, '../frontend/build/index.html'))
 // })
 
 // Image Storage Engine
