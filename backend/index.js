@@ -29,7 +29,7 @@ app.use(session({
 }));
 
 app.use(express.json());
-app.use(express.static('frontend/build'))
+// app.use(express.static('frontend/build'))
 app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
