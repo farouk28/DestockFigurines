@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const MongoStore = require('connect-mongo');
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
+const fs = require('fs');
 const path = require("path");
 const cors = require("cors");
 const passport = require("passport");
@@ -40,31 +41,49 @@ app.listen(port, (error) => {
 
 // Image Storage Engine
 const storage = multer.diskStorage({
-    // Change the destination to a writable directory
-    destination: './tmp/images', // Use a writable path like /tmp
+    // Utilisez le répertoire temporaire /tmp
+    destination: (req, file, cb) => {
+        cb(null, '/tmp'); // Répertoire writable
+    },
     filename: (req, file, cb) => {
-        // Create a unique filename with a timestamp
+        // Créez un nom de fichier unique avec un horodatage
         cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
     }
 });
 
-// Initialize multer with the storage configuration
+// Initialiser multer avec la configuration de stockage
 const upload = multer({ storage: storage });
 
-// Example of using the upload in a route
+// Endpoint pour le téléchargement d'images
 app.post('/upload', upload.single('image'), (req, res) => {
-    res.send('Image uploaded successfully.');
-});
+    // Vérifiez si le fichier a été téléchargé
+    if (!req.file) {
+        return res.status(400).json({ success: 0, message: 'Aucun fichier téléchargé.' });
+    }
 
-// Creating Upload Endpoint for images
-app.use('/images', express.static('upload/images'));
+    // Créer un répertoire pour stocker les images si nécessaire
+    const uploadPath = path.join(__dirname, 'upload', 'images');
+    if (!fs.existsSync(uploadPath)){
+        fs.mkdirSync(uploadPath, { recursive: true });
+    }
 
-app.post("/upload", upload.single('product'), (req, res) => {
-    res.json({
-        success: 1,
-        image_url: `http://localhost:${port}/images/${req.file.filename}`
+    // Déplacer le fichier du répertoire temporaire vers le répertoire d'images
+    const tempPath = path.join('/tmp', req.file.filename);
+    const targetPath = path.join(uploadPath, req.file.filename);
+
+    fs.rename(tempPath, targetPath, (err) => {
+        if (err) return res.status(500).json({ success: 0, message: 'Erreur lors du déplacement du fichier.' });
+
+        res.json({
+            success: 1,
+            image_url: `http://localhost:${port}/images/${req.file.filename}`
+        });
     });
 });
+
+// Créer un endpoint pour servir les images
+app.use('/images', express.static(path.join(__dirname, 'upload', 'images')));
+
 
 // Schema for Creating Products
 const Product = mongoose.model("Product", {
