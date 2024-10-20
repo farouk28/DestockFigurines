@@ -1,7 +1,5 @@
 const port = 4000;
-require('dotenv').config(); // Load environment variables
 const express = require("express");
-const session = require('express-session');
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
@@ -9,16 +7,7 @@ const path = require("path");
 const cors = require("cors");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-
 const app = express();
-
-// Session Middleware Setup
-app.use(session({
-    secret: 'your_secret_key', // Replace with a strong secret
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set to true if using HTTPS in production
-}));
 
 app.use(express.json());
 app.use(cors());
@@ -29,6 +18,15 @@ app.use(passport.session());
 mongoose.connect("mongodb+srv://Farouk:Naruto12@cluster0.jjsmv.mongodb.net/e-commerce", {
     useNewUrlParser: true,
     useUnifiedTopology: true
+});
+
+// Start the server
+app.listen(port, (error) => {
+    if (!error) {
+        console.log("Server Running on Port " + port);
+    } else {
+        console.log("Error: " + error);
+    }
 });
 
 // Image Storage Engine
@@ -63,6 +61,15 @@ const Product = mongoose.model("Product", {
     available: { type: Boolean, default: true },
 });
 
+// Schema creation for User model
+const Users = mongoose.model('Users', {
+    name: { type: String },
+    email: { type: String, unique: true },
+    password: { type: String },
+    cartData: { type: Object },
+    date: { type: Date, default: Date.now },
+});
+
 // Add Product Endpoint
 app.post('/addproduct', async (req, res) => {
     const products = await Product.find({});
@@ -79,48 +86,6 @@ app.post('/addproduct', async (req, res) => {
 
     await product.save();
     res.json({ success: true, name: req.body.name });
-});
-
-// Creating API For deleting Products
-app.post('/removeproduct', async (req, res) => {
-    await Product.findOneAndDelete({ id: req.body.id });
-    res.json({ success: true });
-});
-
-// Creating API for getting all products
-app.get('/allproducts', async (req, res) => {
-    const products = await Product.find({});
-    res.send(products);
-});
-
-// Creating API for updating products
-app.patch('/updateproduct/:id', async (req, res) => {
-    try {
-        const updateProduct = await Product.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
-        });
-        res.status(200).json({
-            status: "success",
-            data: {
-                product: updateProduct
-            }
-        });
-    } catch (error) {
-        res.status(404).json({
-            status: "fail",
-            message: error.message
-        });
-    }
-});
-
-// Schema creation for User model
-const Users = mongoose.model('Users', {
-    name: { type: String },
-    email: { type: String, unique: true },
-    password: { type: String },
-    cartData: { type: Object },
-    date: { type: Date, default: Date.now },
 });
 
 // Creating Endpoint for registering the user
@@ -172,6 +137,39 @@ app.post('/login', async (req, res) => {
         }
     } else {
         res.json({ success: false, errors: "Wrong Email Id" });
+    }
+});
+
+// Creating API For deleting Products
+app.post('/removeproduct', async (req, res) => {
+    await Product.findOneAndDelete({ id: req.body.id });
+    res.json({ success: true });
+});
+
+// Creating API for getting all products
+app.get('/allproducts', async (req, res) => {
+    const products = await Product.find({});
+    res.send(products);
+});
+
+// Creating API for updating products
+app.patch('/updateproduct/:id', async (req, res) => {
+    try {
+        const updateProduct = await Product.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        });
+        res.status(200).json({
+            status: "success",
+            data: {
+                product: updateProduct
+            }
+        });
+    } catch (error) {
+        res.status(404).json({
+            status: "fail",
+            message: error.message
+        });
     }
 });
 
@@ -286,13 +284,4 @@ app.get('/popularinonepiece', async (req, res) => {
     const products = await Product.find({ category: "onepiece" });
     const popularInOnePiece = products.slice(0, 4); // Get the first 4 products
     res.send(popularInOnePiece);
-});
-
-// Start the server
-app.listen(port, (error) => {
-    if (!error) {
-        console.log("Server Running on Port " + port);
-    } else {
-        console.log("Error: " + error);
-    }
 });
