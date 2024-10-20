@@ -63,17 +63,22 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
     // Créer un répertoire pour stocker les images si nécessaire
     const uploadPath = path.join(__dirname, 'upload', 'images');
-    if (!fs.existsSync(uploadPath)){
+    if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
     }
 
-    // Déplacer le fichier du répertoire temporaire vers le répertoire d'images
+    // Définir les chemins pour le fichier temporaire et la cible
     const tempPath = path.join('/tmp', req.file.filename);
     const targetPath = path.join(uploadPath, req.file.filename);
 
+    // Déplacer le fichier du répertoire temporaire vers le répertoire d'images
     fs.rename(tempPath, targetPath, (err) => {
-        if (err) return res.status(500).json({ success: 0, message: 'Erreur lors du déplacement du fichier.' });
+        if (err) {
+            console.error('Erreur lors du déplacement du fichier:', err);
+            return res.status(500).json({ success: 0, message: 'Erreur lors du déplacement du fichier.' });
+        }
 
+        // Répondre avec l'URL de l'image téléchargée
         res.json({
             success: 1,
             image_url: `http://localhost:${port}/images/${req.file.filename}`
