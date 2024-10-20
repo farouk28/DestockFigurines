@@ -1,5 +1,6 @@
 const port = 4000;
 const express = require("express");
+const session = require('express-session');
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
@@ -8,6 +9,14 @@ const cors = require("cors");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const app = express();
+
+// Session Middleware Setup
+app.use(session({
+    secret: 'your_secret_key', // Replace with a strong secret
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set to true if using HTTPS in production
+}));
 
 app.use(express.json());
 app.use(cors());
