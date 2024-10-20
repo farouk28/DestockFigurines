@@ -16,8 +16,7 @@ app.use(passport.session());
 
 // Database Connection with MongoDB
 mongoose.connect("mongodb+srv://Farouk:Naruto12@cluster0.jjsmv.mongodb.net/e-commerce", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
 });
 
 // Start the server
