@@ -24,8 +24,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Database Connection with MongoDB
-mongoose.connect("mongodb+srv://Farouk:Naruto12@cluster0.jjsmv.mongodb.net/e-commerce", {
-});
+mongoose.connect("mongodb+srv://Farouk:Naruto12@cluster0.jjsmv.mongodb.net/e-commerce");
 
 // Start the server
 app.listen(port, (error) => {
