@@ -40,13 +40,21 @@ app.listen(port, (error) => {
 
 // Image Storage Engine
 const storage = multer.diskStorage({
-    destination: './upload/images', // Ensure this path is writable
+    // Change the destination to a writable directory
+    destination: './tmp/images', // Use a writable path like /tmp
     filename: (req, file, cb) => {
+        // Create a unique filename with a timestamp
         cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
     }
 });
 
+// Initialize multer with the storage configuration
 const upload = multer({ storage: storage });
+
+// Example of using the upload in a route
+app.post('/upload', upload.single('image'), (req, res) => {
+    res.send('Image uploaded successfully.');
+});
 
 // Creating Upload Endpoint for images
 app.use('/images', express.static('upload/images'));
