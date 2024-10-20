@@ -15,6 +15,8 @@ app.use(session({
     secret: 'your_secret_key', // Replace with a strong secret
     resave: false,
     saveUninitialized: true,
+    store:MongoStore.create({ 
+        mongoUrl: "mongodb+srv://Farouk:Naruto12@cluster0.jjsmv.mongodb.net/e-commerce"}),
     cookie: { secure: false } // Set to true if using HTTPS in production
 }));
 
