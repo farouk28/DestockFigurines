@@ -2,6 +2,7 @@ const port = 4000;
 const express = require("express");
 const session = require('express-session');
 const mongoose = require("mongoose");
+const MongoStore = require('connect-mongo');
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
