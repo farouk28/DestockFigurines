@@ -39,9 +39,9 @@ const Navbar = () => {
   }
 
   return (
-    <div className='navbar' onClick={() => { setMenu("shop") }}>
-      <div className='nav-logo'>
-        <img src={logo} alt="Logo" />
+    <div className='navbar'>
+      <div className='nav-logo' onClick={() => { setMenu("shop") }}>
+        <img src={logo} alt="Logo"/>
         <p>DestockFigurines</p>
       </div>
       <img className='nav-dropdown' onClick={dropdown_toggle} src={nav_dropdown} alt="dropdown the menu" />
