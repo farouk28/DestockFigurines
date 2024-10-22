@@ -40,7 +40,7 @@ const Navbar = () => {
 
   return (
     <div className='navbar'>
-      <div className='nav-logo' onClick={() => { setMenu("shop") }}>
+      <div className='nav-logo'>
         <img src={logo} alt="Logo"/>
         <p>DestockFigurines</p>
       </div>
