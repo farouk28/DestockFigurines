@@ -10,25 +10,45 @@ const path = require("path");
 const cors = require("cors");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require('bcrypt'); // Ajout de bcrypt pour le hachage des mots de passe
+const rateLimit = require('express-rate-limit'); // Ajout de express-rate-limit
+const helmet = require('helmet'); // Ajout de helmet pour la sécurité
+require('dotenv').config(); // Chargement des variables d'environnement
+
 const app = express();
+
+// Middleware de sécurité
+app.use(helmet());
+app.use(cors({
+    origin: 'https://votre-domaine.com', // Remplacez par votre domaine
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true
+}));
+
+// Limitation des requêtes
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // Limite chaque IP à 100 requêtes par fenêtre
+});
+app.use(limiter);
 
 // Session Middleware Setup
 app.use(session({
-    secret: 'your_secret_key', // Replace with a strong secret
+    secret: process.env.SESSION_SECRET, // Utilisation de la variable d'environnement
     resave: false,
     saveUninitialized: true,
-    store:MongoStore.create({ 
-        mongoUrl: "mongodb+srv://Farouk:Naruto12@cluster0.jjsmv.mongodb.net/e-commerce"}),
-    cookie: { secure: false } // Set to true if using HTTPS in production
+    store: MongoStore.create({ 
+        mongoUrl: process.env.MONGO_URI // Utilisation de la variable d'environnement
+    }),
+    cookie: { secure: false } // Mettre à true si vous utilisez HTTPS en production
 }));
 
 app.use(express.json());
-app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Database Connection with MongoDB
-mongoose.connect("mongodb+srv://Farouk:Naruto12@cluster0.jjsmv.mongodb.net/e-commerce");
+mongoose.connect(process.env.MONGO_URI); // Utilisation de la variable d'environnement
 
 // Start the server
 app.listen(port, (error) => {
@@ -41,12 +61,10 @@ app.listen(port, (error) => {
 
 // Image Storage Engine
 const storage = multer.diskStorage({
-    // Utilisez le répertoire temporaire /tmp
     destination: (req, file, cb) => {
         cb(null, '/tmp'); // Répertoire writable
     },
     filename: (req, file, cb) => {
-        // Créez un nom de fichier unique avec un horodatage
         cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
     }
 });
@@ -56,29 +74,24 @@ const upload = multer({ storage: storage });
 
 // Endpoint pour le téléchargement d'images
 app.post('/upload', upload.single('image'), (req, res) => {
-    // Vérifiez si le fichier a été téléchargé
     if (!req.file) {
         return res.status(400).json({ success: 0, message: 'Aucun fichier téléchargé.' });
     }
 
-    // Créer un répertoire pour stocker les images si nécessaire
     const uploadPath = path.join(__dirname, 'upload', 'images');
     if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
     }
 
-    // Définir les chemins pour le fichier temporaire et la cible
     const tempPath = path.join('/tmp', req.file.filename);
     const targetPath = path.join(uploadPath, req.file.filename);
 
-    // Déplacer le fichier du répertoire temporaire vers le répertoire d'images
     fs.rename(tempPath, targetPath, (err) => {
         if (err) {
             console.error('Erreur lors du déplacement du fichier:', err);
             return res.status(500).json({ success: 0, message: 'Erreur lors du déplacement du fichier.' });
         }
 
-        // Répondre avec l'URL de l'image téléchargée
         res.json({
             success: 1,
             image_url: `http://localhost:${port}/images/${req.file.filename}`
@@ -88,7 +101,6 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
 // Créer un endpoint pour servir les images
 app.use('/images', express.static(path.join(__dirname, 'upload', 'images')));
-
 
 // Schema for Creating Products
 const Product = mongoose.model("Product", {
@@ -141,10 +153,12 @@ app.post('/signup', async (req, res) => {
         cart[i] = 0; // Initialize the cart data
     }
     
+    const hashedPassword = await bcrypt.hash(req.body.password, 10); // Hachage du mot de passe
+
     const user = new Users({
         name: req.body.username,
         email: req.body.email,
-        password: req.body.password, // Consider hashing the password before saving
+        password: hashedPassword, // Enregistrer le mot de passe haché
         cartData: cart,
     });
 
@@ -156,7 +170,7 @@ app.post('/signup', async (req, res) => {
         }
     };
 
-    const token = jwt.sign(data, 'secret_ecom');
+    const token = jwt.sign(data, process.env.JWT_SECRET); // Utilisation de la variable d'environnement
     res.json({ success: true, token });
 });
 
@@ -164,14 +178,14 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
     const user = await Users.findOne({ email: req.body.email });
     if (user) {
-        const passCompare = req.body.password === user.password; // Hash comparison is recommended
+        const passCompare = await bcrypt.compare(req.body.password, user.password); // Comparaison des mots de passe hachés
         if (passCompare) {
             const data = {
                 user: {
                     id: user.id
                 }
             };
-            const token = jwt.sign(data, 'secret_ecom');
+            const token = jwt.sign(data, process.env.JWT_SECRET); // Utilisation de la variable d'environnement
             res.json({ success: true, token });
         } else {
             res.json({ success: false, errors: "Wrong Password" });
@@ -229,14 +243,14 @@ app.post('/removeuser', async (req, res) => {
 // Creating API For Updating Users
 app.patch('/updateuser/:_id', async (req, res) => {
     try {
-        const updateUser  = await Users.findByIdAndUpdate(req.params._id, req.body, {
+        const updateUser   = await Users.findByIdAndUpdate(req.params._id, req.body, {
             new: true,
             runValidators: true
         });
         res.status(200).json({
             status: "success",
             data: {
-                user: updateUser 
+                user: updateUser  
             }
         });
     } catch (error) {
@@ -254,7 +268,7 @@ app.put("/profileupdate", async (req, res) => {
             return res.status(404).json({ message: "User  not found" });
         }
 
-        if (password !== user.password) { // Password comparison should use hashing
+        if (password !== user.password) { // Comparaison des mots de passe devrait utiliser le hachage
             return res.status(401).json({ message: "Incorrect password" });
         }
 
@@ -264,7 +278,7 @@ app.put("/profileupdate", async (req, res) => {
 
         user.name = username;
         user.email = email;
-        user.password = newPassword; // Hash the new password before saving
+        user.password = await bcrypt.hash(newPassword, 10); // Hacher le nouveau mot de passe avant de le sauvegarder
 
         await user.save();
 
@@ -275,13 +289,13 @@ app.put("/profileupdate", async (req, res) => {
 });
 
 // Middleware to fetch user
-const fetchUser  = async (req, res, next) => {
+const fetchUser   = async (req, res, next) => {
     const token = req.header('auth-token');
     if (!token) {
         return res.status(401).send({ errors: "Please authenticate using a valid token" });
     }
     try {
-        const data = jwt.verify(token, 'secret_ecom');
+        const data = jwt.verify(token, process.env.JWT_SECRET); // Utilisation de la variable d'environnement
         req.user = data.user;
         next();
     } catch (error) {
@@ -290,7 +304,7 @@ const fetchUser  = async (req, res, next) => {
 };
 
 // Creating endpoint for adding products in cart data
-app.post('/addtocart', fetchUser , async (req, res) => {
+app.post('/addtocart', fetchUser  , async (req, res) => {
     const userData = await Users.findOne({ _id: req.user.id });
     userData.cartData[req.body.itemId] += 1;
     await Users.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
@@ -298,7 +312,7 @@ app.post('/addtocart', fetchUser , async (req, res) => {
 });
 
 // Creating endpoint to remove product from cart data
-app.post('/removefromcart', fetchUser , async (req, res) => {
+app.post('/removefromcart', fetchUser  , async (req, res) => {
     const userData = await Users.findOne({ _id: req.user.id });
     if (userData.cartData[req.body.itemId] > 0) {
         userData.cartData[req.body.itemId] -= 1;
@@ -308,7 +322,7 @@ app.post('/removefromcart', fetchUser , async (req, res) => {
 });
 
 // Creating endpoint to get cart data
-app.post('/getcart', fetchUser , async (req, res) => {
+app.post('/getcart', fetchUser  , async (req, res) => {
     const userData = await Users.findOne({ _id: req.user.id });
     res.json(userData.cartData);
 });
