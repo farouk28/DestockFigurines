@@ -12,6 +12,11 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const app = express();
 
+const helmet = require('helmet');
+
+// Utiliser Helmet pour sécuriser l'application
+app.use(helmet());
+
 // Session Middleware Setup
 app.use(session({
     secret: 'your_secret_key', // Replace with a strong secret
